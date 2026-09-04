@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-fenix-black text-white;
+    background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(200,30,30,0.25), transparent);
+  }
+  ::selection {
+    @apply bg-fenix-orange/40 text-white;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0a0a0a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(#c81e1e, #f97316);
+    border-radius: 999px;
+  }
+}
+
+@layer components {
+  .font-display {
+    letter-spacing: 0.03em;
+  }
+  .btn-fire {
+    @apply inline-flex -skew-x-6 items-center justify-center gap-2 border-2 border-black bg-fire-gradient px-8 py-3.5
+      font-display text-lg uppercase tracking-wide text-white shadow-ember transition-all duration-300
+      hover:shadow-ember-lg hover:-translate-y-1 hover:scale-105 active:translate-y-0 active:scale-100;
+  }
+  .btn-ghost {
+    @apply inline-flex -skew-x-6 items-center justify-center gap-2 border-2 border-white/30 bg-white/5
+      px-8 py-3.5 font-display text-lg uppercase tracking-wide text-white transition-all duration-300
+      hover:border-fenix-orange hover:bg-white/10 hover:-translate-y-1 hover:scale-105;
+  }
+  .btn-label {
+    @apply inline-flex skew-x-6 items-center gap-2;
+  }
+  .card {
+    @apply rounded-none border-2 border-white/15 bg-white/[0.03] transition-all duration-300
+      hover:-translate-y-1 hover:scale-[1.015] hover:border-fenix-orange/50 hover:bg-white/[0.06];
+  }
+  .section-label {
+    @apply inline-block -rotate-1 rounded-none border-2 border-fenix-orange/40 bg-fenix-orange/10 px-4 py-1
+      text-xs font-bold uppercase tracking-[0.2em] text-fenix-orange;
+  }
+  .marquee-row {
+    @apply flex w-max animate-marquee items-center gap-x-16 whitespace-nowrap;
+  }
+}

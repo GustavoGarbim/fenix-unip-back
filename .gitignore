@@ -1,0 +1,16 @@
+# Frontend (Vite)
+fenix-unip/node_modules/
+fenix-unip/dist/
+fenix-unip/.env
+fenix-unip/.env.*.local
+fenix-unip/*.log
+
+# Backend (.NET)
+fenix-unip-back/bin/
+fenix-unip-back/obj/
+fenix-unip-back/.idea/
+fenix-unip-back/*.user
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,6 @@
+@fenix_unip_back_HostAddress = http://localhost:5004
+
+GET {{fenix_unip_back_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
