@@ -1,19 +1,21 @@
 # Deploy — Fênix UNIP
 
-Este documento explica como configurar front-end, back-end e banco por variável, para não precisar mexer em código ao subir em outro servidor.
+Este documento explica como configurar back-end e banco por variável, para não precisar mexer em código ao subir em outro servidor.
 
-## Front-end (`fenix-unip/`)
+## Front-end
 
-Toda chamada à API passa por `src/services/api.js`, que lê a URL base de uma única variável:
+O front-end vive em um repositório separado: [`GustavoGarbim/fenix-unip`](https://github.com/GustavoGarbim/fenix-unip), hospedado no Vercel. Este repositório (`fenix-unip-back`) contém apenas o back-end e os scripts de banco de dados.
+
+Toda chamada à API do front passa por `src/services/api.js`, que lê a URL base de uma única variável:
 
 ```
 VITE_API_URL=http://localhost:5004/api
 ```
 
-- Local: arquivo `.env` (já criado, ignorado no git).
-- Produção: crie `.env.production` (ou defina `VITE_API_URL` nas env vars do serviço de hospedagem — Vercel, Netlify, Azure Static Web Apps, etc.) apontando para a URL pública do backend, ex: `VITE_API_URL=https://api.fenixunip.com.br/api`.
+- Local: arquivo `.env` (ignorado no git) no repositório do front.
+- Produção: defina `VITE_API_URL` nas env vars do Vercel apontando para a URL pública deste backend, ex: `VITE_API_URL=https://api.fenixunip.com.br/api`.
 
-**Importante (Vite):** variáveis `VITE_*` são embutidas no bundle **no momento do build**, não em runtime. Ou seja, ao trocar `VITE_API_URL` em produção é preciso rodar `npm run build` de novo (não basta reiniciar o servidor estático). Se quiser trocar a URL sem rebuild, seria necessário servir um `config.js` externo lido em runtime — não implementado agora por não ter sido pedido, mas é possível migrar para isso depois se precisar.
+**Importante (Vite):** variáveis `VITE_*` são embutidas no bundle **no momento do build**, não em runtime. Ou seja, ao trocar `VITE_API_URL` em produção é preciso rodar o build de novo (o Vercel já faz isso automaticamente a cada deploy).
 
 ## Back-end (`fenix-unip-back/`)
 
@@ -46,4 +48,4 @@ Os scripts em `database/` usam nome fixo de banco (`FenixUnipDB`), mas o **ender
 
 1. Suba o SQL Server e rode os scripts de `database/` (ou `dotnet ef database update`).
 2. Publique o backend (`dotnet publish`) e defina as variáveis de ambiente da tabela acima no servidor de destino.
-3. Defina `VITE_API_URL` apontando para a URL pública do backend e rode `npm run build` do front; publique o conteúdo de `dist/`.
+3. No repositório `fenix-unip` (front, Vercel), defina `VITE_API_URL` apontando para a URL pública deste backend.
