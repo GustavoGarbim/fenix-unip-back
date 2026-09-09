@@ -18,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 var mySqlServerVersion = new MySqlServerVersion(new Version(8, 0, 29));
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(connectionString, mySqlServerVersion));
+    options.UseMySql(connectionString, mySqlServerVersion, mySqlOptions => mySqlOptions.EnableRetryOnFailure()));
 
 // Repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -117,6 +117,16 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+// Aplica automaticamente as migrations pendentes ao subir a aplicação.
+// Idempotente (não faz nada se o banco já estiver atualizado) — é assim que
+// o schema é criado/atualizado no banco de produção (TiDB/Render), já que o
+// container publicado não tem o SDK/dotnet-ef para rodar isso manualmente.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
