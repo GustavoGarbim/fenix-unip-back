@@ -20,6 +20,13 @@ var mySqlServerVersion = new MySqlServerVersion(new Version(8, 0, 29));
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, mySqlServerVersion, mySqlOptions => mySqlOptions.EnableRetryOnFailure()));
 
+// Log temporário de diagnóstico: mostra só o host/porta da connection string
+// (nunca a senha) para confirmar se a variável de ambiente
+// ConnectionStrings__DefaultConnection está realmente chegando na aplicação.
+// Remover depois que o deploy no Render estiver funcionando.
+var csBuilder = new MySqlConnector.MySqlConnectionStringBuilder(connectionString ?? string.Empty);
+Console.WriteLine($"[DIAGNOSTICO DB] Server={csBuilder.Server} Port={csBuilder.Port} Database={csBuilder.Database} SslMode={csBuilder.SslMode}");
+
 // Repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
