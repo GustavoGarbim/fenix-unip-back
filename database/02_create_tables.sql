@@ -77,6 +77,8 @@ CREATE TABLE dbo.Usuarios
     DataNascimento  DATE                NULL,
     DataCadastro    DATETIME2           NOT NULL CONSTRAINT DF_Usuarios_DataCadastro DEFAULT (GETDATE()),
     Ativo           BIT                 NOT NULL CONSTRAINT DF_Usuarios_Ativo DEFAULT (1),
+    SenhaResetToken     NVARCHAR(100)   NULL,
+    SenhaResetExpiraEm  DATETIME2       NULL,
     CONSTRAINT PK_Usuarios PRIMARY KEY CLUSTERED (Id),
     CONSTRAINT UQ_Usuarios_Email UNIQUE (Email),
     CONSTRAINT UQ_Usuarios_RA UNIQUE (RA)

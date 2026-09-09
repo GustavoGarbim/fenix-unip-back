@@ -22,17 +22,23 @@ public class PedidoService : IPedidoService
         return pedidos.Select(ToResponseDto);
     }
 
+    public async Task<IEnumerable<PedidoResponseDto>> GetAllByUsuarioAsync(int usuarioId)
+    {
+        var pedidos = await _pedidoRepository.GetAllByUsuarioIdAsync(usuarioId);
+        return pedidos.Select(ToResponseDto);
+    }
+
     public async Task<PedidoResponseDto?> GetByIdAsync(int id)
     {
         var pedido = await _pedidoRepository.GetByIdWithItensAsync(id);
         return pedido is null ? null : ToResponseDto(pedido);
     }
 
-    public async Task<PedidoResponseDto> CreateAsync(PedidoCreateDto dto)
+    public async Task<PedidoResponseDto> CreateAsync(PedidoCreateDto dto, int usuarioId)
     {
         var pedido = new Pedido
         {
-            UsuarioId = dto.UsuarioId,
+            UsuarioId = usuarioId,
             DataPedido = DateTime.UtcNow,
             Status = "Pendente"
         };

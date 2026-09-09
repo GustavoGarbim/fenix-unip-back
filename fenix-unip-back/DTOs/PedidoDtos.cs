@@ -32,9 +32,6 @@ public class ItemPedidoCreateDto
 
 public class PedidoCreateDto
 {
-    [Required]
-    public int UsuarioId { get; set; }
-
     [Required, MinLength(1)]
     public List<ItemPedidoCreateDto> Itens { get; set; } = new();
 }

@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using fenix_unip_back.DTOs;
 using fenix_unip_back.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -17,15 +19,35 @@ public class PedidosController : ControllerBase
         _service = service;
     }
 
+    private int UsuarioIdAtual =>
+        int.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+            ?? User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+    private string? RoleAtual => User.FindFirst(ClaimTypes.Role)?.Value;
+
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<PedidoResponseDto>>> GetAll() =>
-        Ok(await _service.GetAllAsync());
+    public async Task<ActionResult<IEnumerable<PedidoResponseDto>>> GetAll()
+    {
+        if (RoleAtual == "Admin")
+        {
+            return Ok(await _service.GetAllAsync());
+        }
+
+        return Ok(await _service.GetAllByUsuarioAsync(UsuarioIdAtual));
+    }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<PedidoResponseDto>> GetById(int id)
     {
         var pedido = await _service.GetByIdAsync(id);
-        return pedido is null ? NotFound() : Ok(pedido);
+        if (pedido is null) return NotFound();
+
+        if (RoleAtual != "Admin" && pedido.UsuarioId != UsuarioIdAtual)
+        {
+            return Forbid();
+        }
+
+        return Ok(pedido);
     }
 
     [HttpPost]
@@ -33,7 +55,7 @@ public class PedidosController : ControllerBase
     {
         try
         {
-            var criado = await _service.CreateAsync(dto);
+            var criado = await _service.CreateAsync(dto, UsuarioIdAtual);
             return CreatedAtAction(nameof(GetById), new { id = criado.Id }, criado);
         }
         catch (InvalidOperationException ex)
