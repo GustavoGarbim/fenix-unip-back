@@ -1,9 +1,15 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useDemoMode } from '../composables/useDemoMode'
-import { get } from '../services/api'
+import { useAuth } from '../composables/useAuth'
+import { useCart } from '../composables/useCart'
+import { get, post } from '../services/api'
 
-const { triggerDemo } = useDemoMode()
+const { notify } = useDemoMode()
+const { isAuthenticated } = useAuth()
+const { items: cartItems, addItem, removeItem, updateQuantity, clearCart, totalCount, totalPrice } = useCart()
+const router = useRouter()
 
 const categories = ['Todos', 'Moletons', 'Camisas', 'Canecas', 'Acessórios']
 const activeCategory = ref('Todos')
@@ -53,15 +59,53 @@ const filtered = computed(() =>
     : products.value.filter((p) => p.category === activeCategory.value)
 )
 
-const cartCount = ref(0)
+const isCartOpen = ref(false)
+const isCheckingOut = ref(false)
 
 function addToCart(product) {
-  cartCount.value += 1
-  triggerDemo(`Garantir ${product.name}`)
+  addItem(product)
 }
 
-function checkout() {
-  triggerDemo('Fechar Pedido')
+function openCart() {
+  isCartOpen.value = true
+}
+
+function closeCart() {
+  isCartOpen.value = false
+}
+
+function formatPrice(value) {
+  return `R$ ${Number(value).toFixed(2).replace('.', ',')}`
+}
+
+async function checkout() {
+  if (!isAuthenticated.value) {
+    isCartOpen.value = false
+    router.push('/login?redirect=/loja')
+    return
+  }
+
+  isCheckingOut.value = true
+  try {
+    const payload = {
+      Itens: cartItems.value.map((i) => ({ ProdutoId: i.id, Quantidade: i.quantity })),
+    }
+    await post('/pedidos', payload)
+    clearCart()
+    isCartOpen.value = false
+    notify({
+      title: 'Pedido registrado!',
+      message:
+        'Seu pedido foi registrado com sucesso. Nenhum método de pagamento foi configurado ainda — entre em contato com o suporte da Fênix para finalizar o pagamento.',
+    })
+  } catch (err) {
+    notify({
+      title: 'Não foi possível concluir o pedido',
+      message: err.message,
+    })
+  } finally {
+    isCheckingOut.value = false
+  }
 }
 
 function tiltFor(i) {
@@ -83,17 +127,17 @@ function tiltFor(i) {
       <button
         type="button"
         class="relative flex items-center gap-2 self-start border-2 border-white/15 bg-white/5 px-5 py-3 text-sm font-bold uppercase tracking-wide transition hover:border-fenix-orange/60"
-        @click="checkout"
+        @click="openCart"
       >
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m-10 0a2 2 0 100 4 2 2 0 000-4zm10 0a2 2 0 100 4 2 2 0 000-4z" />
         </svg>
         Carrinho
         <span
-          v-if="cartCount > 0"
+          v-if="totalCount > 0"
           class="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-fenix-red text-xs font-bold"
         >
-          {{ cartCount }}
+          {{ totalCount }}
         </span>
       </button>
     </div>
@@ -173,6 +217,89 @@ function tiltFor(i) {
     <div v-if="!loadingProducts && filtered.length === 0" class="card mt-10 p-10 text-center text-white/50">
       Nenhum produto disponível nesta categoria.
     </div>
+
+    <Transition name="cart-fade">
+      <div
+        v-if="isCartOpen"
+        class="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm"
+        @click.self="closeCart"
+      >
+        <div class="flex h-full w-full max-w-md flex-col border-l-2 border-white/10 bg-fenix-black p-6 shadow-2xl">
+          <div class="flex items-center justify-between">
+            <h2 class="font-display text-2xl tracking-wide">
+              Seu <span class="text-fenix-orange">Carrinho</span>
+            </h2>
+            <button
+              type="button"
+              class="flex h-9 w-9 items-center justify-center border-2 border-white/15 text-white/60 transition hover:border-fenix-orange/60 hover:text-white"
+              @click="closeCart"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div class="mt-6 flex-1 overflow-y-auto">
+            <p v-if="cartItems.length === 0" class="text-white/50">Seu carrinho está vazio.</p>
+
+            <div v-else class="flex flex-col gap-4">
+              <div v-for="item in cartItems" :key="item.id" class="card flex items-center gap-4 p-4">
+                <div class="flex-1">
+                  <h3 class="font-display tracking-wide">{{ item.name }}</h3>
+                  <p class="mt-1 text-sm text-white/50">{{ formatPrice(item.price) }} / un.</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    class="flex h-7 w-7 items-center justify-center border-2 border-white/15 text-sm font-bold transition hover:border-fenix-orange/60"
+                    @click="updateQuantity(item.id, item.quantity - 1)"
+                  >
+                    -
+                  </button>
+                  <span class="w-6 text-center text-sm font-bold">{{ item.quantity }}</span>
+                  <button
+                    type="button"
+                    class="flex h-7 w-7 items-center justify-center border-2 border-white/15 text-sm font-bold transition hover:border-fenix-orange/60"
+                    @click="updateQuantity(item.id, item.quantity + 1)"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <div class="w-20 text-right font-display text-fenix-gold">
+                  {{ formatPrice(item.price * item.quantity) }}
+                </div>
+
+                <button
+                  type="button"
+                  class="text-white/40 transition hover:text-fenix-red"
+                  title="Remover item"
+                  @click="removeItem(item.id)"
+                >
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 border-t-2 border-white/10 pt-6">
+            <div class="flex items-center justify-between">
+              <span class="section-label">Total</span>
+              <span class="font-display text-2xl text-fenix-gold">{{ formatPrice(totalPrice) }}</span>
+            </div>
+
+            <button
+              type="button"
+              class="btn-fire mt-5 w-full !py-3 !text-base disabled:cursor-not-allowed disabled:opacity-50"
+              :disabled="cartItems.length === 0 || isCheckingOut"
+              @click="checkout"
+            >
+              <span class="btn-label">{{ isCheckingOut ? 'Enviando...' : 'Fechar Pedido' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -185,5 +312,14 @@ function tiltFor(i) {
 .grid-item-leave-to {
   opacity: 0;
   transform: translateY(16px) scale(0.97);
+}
+
+.cart-fade-enter-active,
+.cart-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.cart-fade-enter-from,
+.cart-fade-leave-to {
+  opacity: 0;
 }
 </style>
