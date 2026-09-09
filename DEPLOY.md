@@ -29,9 +29,14 @@ O ASP.NET Core já mescla `appsettings.json` com variáveis de ambiente automati
 | Audiência JWT | `Jwt:Audience` | `Jwt__Audience` |
 | Origens liberadas no CORS (separadas por vírgula) | `Cors:AllowedOrigins` | `Cors__AllowedOrigins` |
 
+**Banco de dados:** o backend usa o provider MySQL (Pomelo) via EF Core, compatível com TiDB Cloud. Formato da connection string:
+```
+Server=<host>;Port=<porta>;Database=<banco>;User=<usuario>;Password=<senha>;SslMode=Required;
+```
+
 Exemplo (Linux/produção):
 ```bash
-export ConnectionStrings__DefaultConnection="Server=meu-servidor-sql;Database=FenixUnipDB;User Id=usuario;Password=senha;TrustServerCertificate=True;"
+export ConnectionStrings__DefaultConnection="Server=gateway01.sa-east-1.prod.aws.tidbcloud.com;Port=4000;Database=fenix_unip;User=usuario;Password=senha;SslMode=Required;"
 export Cors__AllowedOrigins="https://fenixunip.com.br,https://www.fenixunip.com.br"
 export Jwt__Key="uma-chave-bem-longa-e-secreta-de-producao"
 ```
@@ -42,10 +47,12 @@ No IIS/Windows Server, as mesmas variáveis podem ser definidas em "Configuratio
 
 ## Banco de dados
 
-Os scripts em `database/` usam nome fixo de banco (`FenixUnipDB`), mas o **endereço/servidor** é definido só pela connection string do backend (`ConnectionStrings__DefaultConnection`), então trocar de ambiente (dev → homologação → produção) é só apontar essa variável para o servidor SQL correto, sem alterar os scripts.
+O schema é criado e versionado via **migrations do EF Core** (pasta `Migrations/` do backend) — basta rodar `dotnet ef database update` apontando `ConnectionStrings__DefaultConnection` para o servidor MySQL/TiDB de destino.
+
+Os scripts T-SQL em `database/` foram escritos originalmente para SQL Server e ficaram desatualizados depois da migração para MySQL/TiDB; hoje servem só de referência histórica do schema, não use para provisionar o banco.
 
 ## Resumo do fluxo de deploy
 
-1. Suba o SQL Server e rode os scripts de `database/` (ou `dotnet ef database update`).
+1. Crie o banco vazio no MySQL/TiDB e rode `dotnet ef database update` para aplicar as migrations.
 2. Publique o backend (`dotnet publish`) e defina as variáveis de ambiente da tabela acima no servidor de destino.
 3. No repositório `fenix-unip` (front, Vercel), defina `VITE_API_URL` apontando para a URL pública deste backend.
