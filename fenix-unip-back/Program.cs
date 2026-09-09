@@ -12,9 +12,13 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Database
+// Database (MySQL-compatible — usado com TiDB Cloud em produção)
+// Versão fixada (em vez de ServerVersion.AutoDetect) para não depender de uma
+// conexão real ao banco só para descobrir a versão do servidor.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var mySqlServerVersion = new MySqlServerVersion(new Version(8, 0, 29));
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseMySql(connectionString, mySqlServerVersion));
 
 // Repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
