@@ -19,10 +19,21 @@ export function useDemoMode() {
     window.setTimeout(() => dismissToast(id), 4200)
   }
 
+  function notify({ title = '', message = '', actionLabel = '' } = {}) {
+    const id = nextId++
+    state.toasts.push({
+      id,
+      title,
+      message,
+      actionLabel,
+    })
+    window.setTimeout(() => dismissToast(id), 4200)
+  }
+
   function dismissToast(id) {
     const idx = state.toasts.findIndex((t) => t.id === id)
     if (idx !== -1) state.toasts.splice(idx, 1)
   }
 
-  return { state, triggerDemo, dismissToast }
+  return { state, triggerDemo, notify, dismissToast }
 }
