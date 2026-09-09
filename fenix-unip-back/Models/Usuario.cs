@@ -30,6 +30,11 @@ public class Usuario
 
     public bool Ativo { get; set; } = true;
 
+    [MaxLength(100)]
+    public string? SenhaResetToken { get; set; }
+
+    public DateTime? SenhaResetExpiraEm { get; set; }
+
     public CarteirinhaDigital? CarteirinhaDigital { get; set; }
     public ICollection<Pedido> Pedidos { get; set; } = new List<Pedido>();
 }

@@ -36,9 +36,25 @@ public class RegisterRequestDto
 
 public class AuthResponseDto
 {
+    public int Id { get; set; }
     public string Token { get; set; } = string.Empty;
     public DateTime ExpiraEm { get; set; }
     public string Nome { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
+}
+
+public class ForgotPasswordRequestDto
+{
+    [Required, EmailAddress]
+    public string Email { get; set; } = string.Empty;
+}
+
+public class ResetPasswordRequestDto
+{
+    [Required]
+    public string Token { get; set; } = string.Empty;
+
+    [Required, MinLength(6)]
+    public string NovaSenha { get; set; } = string.Empty;
 }

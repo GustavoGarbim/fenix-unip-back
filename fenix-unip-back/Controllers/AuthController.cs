@@ -44,4 +44,19 @@ public class AuthController : ControllerBase
         if (result is null) return Unauthorized(new { message = "E-mail ou senha inválidos." });
         return Ok(result);
     }
+
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto dto)
+    {
+        await _authService.ForgotPasswordAsync(dto);
+        return Ok(new { message = "Se o e-mail existir, enviaremos instruções." });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordRequestDto dto)
+    {
+        var sucesso = await _authService.ResetPasswordAsync(dto);
+        if (!sucesso) return BadRequest(new { message = "Token inválido ou expirado." });
+        return Ok(new { message = "Senha redefinida com sucesso." });
+    }
 }

@@ -5,5 +5,6 @@ namespace fenix_unip_back.Repositories.Interfaces;
 public interface IPedidoRepository : IRepository<Pedido>
 {
     Task<IEnumerable<Pedido>> GetAllWithItensAsync();
+    Task<IEnumerable<Pedido>> GetAllByUsuarioIdAsync(int usuarioId);
     Task<Pedido?> GetByIdWithItensAsync(int id);
 }

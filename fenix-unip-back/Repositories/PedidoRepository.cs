@@ -14,6 +14,10 @@ public class PedidoRepository : Repository<Pedido>, IPedidoRepository
     public async Task<IEnumerable<Pedido>> GetAllWithItensAsync() =>
         await DbSet.Include(p => p.Itens).ThenInclude(i => i.Produto).ToListAsync();
 
+    public async Task<IEnumerable<Pedido>> GetAllByUsuarioIdAsync(int usuarioId) =>
+        await DbSet.Include(p => p.Itens).ThenInclude(i => i.Produto)
+            .Where(p => p.UsuarioId == usuarioId).ToListAsync();
+
     public async Task<Pedido?> GetByIdWithItensAsync(int id) =>
         await DbSet.Include(p => p.Itens).ThenInclude(i => i.Produto).FirstOrDefaultAsync(p => p.Id == id);
 }
