@@ -51,8 +51,17 @@ O schema é criado e versionado via **migrations do EF Core** (pasta `Migrations
 
 Os scripts T-SQL em `database/` foram escritos originalmente para SQL Server e ficaram desatualizados depois da migração para MySQL/TiDB; hoje servem só de referência histórica do schema, não use para provisionar o banco.
 
+## Deploy no Render
+
+O Render não tem runtime nativo para .NET — o serviço precisa ser criado como **Docker** apontando para o `Dockerfile` na raiz deste repositório:
+
+- **Dockerfile Path:** `Dockerfile`
+- **Docker Build Context Directory:** `.` (raiz do repositório)
+
+O Render injeta a variável `PORT` em runtime e o container já está preparado para escutar nela (ver `ENTRYPOINT` do `Dockerfile`). Configure as demais variáveis de ambiente (tabela acima) na aba **Environment** do serviço no Render.
+
 ## Resumo do fluxo de deploy
 
 1. Crie o banco vazio no MySQL/TiDB e rode `dotnet ef database update` para aplicar as migrations.
-2. Publique o backend (`dotnet publish`) e defina as variáveis de ambiente da tabela acima no servidor de destino.
-3. No repositório `fenix-unip` (front, Vercel), defina `VITE_API_URL` apontando para a URL pública deste backend.
+2. Crie o serviço Docker no Render apontando para o `Dockerfile` e defina as variáveis de ambiente da tabela acima.
+3. No repositório `fenix-unip` (front, Vercel), defina `VITE_API_URL` apontando para a URL pública deste backend (ex.: `https://fenix-unip-back.onrender.com/api`).
