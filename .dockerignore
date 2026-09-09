@@ -1,0 +1,8 @@
+fenix-unip-back/bin/
+fenix-unip-back/obj/
+**/.vs/
+**/.idea/
+database/
+DEPLOY.md
+*.md
+.git/

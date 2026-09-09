@@ -125,7 +125,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Em produção (Render e outros PaaS em container) o TLS é terminado na borda
+// e o trafego chega em HTTP puro ao container; forçar redirect aqui causaria
+// loop de redirecionamento. Só faz sentido em desenvolvimento local.
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors(CorsPolicy);
 
