@@ -20,6 +20,7 @@ public class AppDbContext : DbContext
     public DbSet<ItemPedido> ItensPedido => Set<ItemPedido>();
     public DbSet<CarteirinhaDigital> CarteirinhasDigitais => Set<CarteirinhaDigital>();
     public DbSet<Sugestao> Sugestoes => Set<Sugestao>();
+    public DbSet<CheckIn> CheckIns => Set<CheckIn>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -122,6 +123,25 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Sugestao>(entity =>
         {
             entity.ToTable("Sugestoes");
+        });
+
+        // CheckIns
+        modelBuilder.Entity<CheckIn>(entity =>
+        {
+            entity.ToTable("CheckIns");
+            entity.HasIndex(c => new { c.UsuarioId, c.EventoId }).IsUnique();
+            entity.HasOne(c => c.Usuario)
+                .WithMany()
+                .HasForeignKey(c => c.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(c => c.Evento)
+                .WithMany()
+                .HasForeignKey(c => c.EventoId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(c => c.Administrador)
+                .WithMany()
+                .HasForeignKey(c => c.AdministradorId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }
