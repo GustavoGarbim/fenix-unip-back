@@ -35,6 +35,7 @@ builder.Services.AddScoped<IEventoRepository, EventoRepository>();
 builder.Services.AddScoped<ITryoutRepository, TryoutRepository>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<ICarteirinhaDigitalRepository, CarteirinhaDigitalRepository>();
+builder.Services.AddScoped<ICheckInRepository, CheckInRepository>();
 
 // Services
 builder.Services.AddScoped<JwtTokenGenerator>();
@@ -47,6 +48,8 @@ builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<ICarteirinhaDigitalService, CarteirinhaDigitalService>();
 builder.Services.AddScoped<ISugestaoService, SugestaoService>();
+builder.Services.AddScoped<IQrCodeTokenService, QrCodeTokenService>();
+builder.Services.AddScoped<ICheckInService, CheckInService>();
 
 // Controllers
 builder.Services.AddControllers();
