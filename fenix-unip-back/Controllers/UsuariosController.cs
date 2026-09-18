@@ -78,6 +78,20 @@ public class UsuariosController : ControllerBase
         return NoContent();
     }
 
+    [HttpPatch("{id:int}/status")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] UsuarioStatusUpdateDto dto)
+    {
+        var usuario = await _repository.GetByIdAsync(id);
+        if (usuario is null) return NotFound();
+
+        usuario.Ativo = dto.Ativo;
+        _repository.Update(usuario);
+        await _repository.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     private static UsuarioResponseDto ToResponseDto(Usuario u) => new()
     {
         Id = u.Id,
