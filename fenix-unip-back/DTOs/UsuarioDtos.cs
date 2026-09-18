@@ -33,3 +33,8 @@ public class UsuarioUpdateDto
 
     public bool Ativo { get; set; } = true;
 }
+
+public class UsuarioStatusUpdateDto
+{
+    public bool Ativo { get; set; }
+}
