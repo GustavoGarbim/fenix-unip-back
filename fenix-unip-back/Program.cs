@@ -77,20 +77,16 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // CORS
-// Origens permitidas vêm de config (appsettings.json "Cors:AllowedOrigins" ou
-// variável de ambiente Cors__AllowedOrigins), separadas por vírgula.
-// Em produção, basta trocar essa variável para o domínio do front hospedado.
-string[] origins = ["http://localhost:5173", "https://fenix-unip-back.onrender.com/api"];
+// Liberado para qualquer origem (não usamos cookies/credentials, só JWT via header).
 const string CorsPolicy = "FenixUnipCors";
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(CorsPolicy, policy =>
     {
-        policy.WithOrigins(origins)
+        policy.AllowAnyOrigin()
             .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+            .AllowAnyMethod();
     });
 });
 
