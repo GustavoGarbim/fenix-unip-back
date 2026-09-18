@@ -80,15 +80,14 @@ builder.Services.AddAuthorization();
 // Origens permitidas vêm de config (appsettings.json "Cors:AllowedOrigins" ou
 // variável de ambiente Cors__AllowedOrigins), separadas por vírgula.
 // Em produção, basta trocar essa variável para o domínio do front hospedado.
+string[] origins = ["http://localhost:5173", "https://fenix-unip-back.onrender.com/api"];
 const string CorsPolicy = "FenixUnipCors";
-var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:5173")
-    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(CorsPolicy, policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        policy.WithOrigins(origins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
