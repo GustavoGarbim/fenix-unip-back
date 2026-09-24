@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using fenix_unip_back.DTOs;
 using fenix_unip_back.Models;
 using fenix_unip_back.Repositories.Interfaces;
@@ -18,6 +20,12 @@ public class UsuariosController : ControllerBase
         _repository = repository;
     }
 
+    private int UsuarioIdAtual =>
+        int.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+            ?? User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+    private string? RoleAtual => User.FindFirst(ClaimTypes.Role)?.Value;
+
     [HttpGet]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<IEnumerable<UsuarioResponseDto>>> GetAll()
@@ -36,6 +44,11 @@ public class UsuariosController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] UsuarioUpdateDto dto)
     {
+        if (RoleAtual != "Admin" && id != UsuarioIdAtual)
+        {
+            return Forbid();
+        }
+
         var usuario = await _repository.GetByIdAsync(id);
         if (usuario is null) return NotFound();
 
@@ -60,6 +73,20 @@ public class UsuariosController : ControllerBase
         if (usuario is null) return NotFound();
 
         _repository.Delete(usuario);
+        await _repository.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpPatch("{id:int}/status")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] UsuarioStatusUpdateDto dto)
+    {
+        var usuario = await _repository.GetByIdAsync(id);
+        if (usuario is null) return NotFound();
+
+        usuario.Ativo = dto.Ativo;
+        _repository.Update(usuario);
         await _repository.SaveChangesAsync();
 
         return NoContent();
